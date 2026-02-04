@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Mandelbrot p5.js</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.0/p5.min.js"></script>
+    <style>
+        body { margin: 0; padding: 0; background-color: #464646; overflow: hidden; }
+        canvas { display: block; position: fixed; top: 0; left: 0; z-index: -1; }
+    </style>
+</head>
+<body>
+
+<script>
+function setup() {
+  // On crée un canvas qui prend toute la fenêtre
+  createCanvas(windowWidth, windowHeight);
+  pixelDensity(1); // Optimise les performances sur les écrans Retina
+  noLoop(); // On ne dessine qu'une seule fois (image statique)
+}
+
+function draw() {
+  loadPixels();
+  
+  const maxIterations = 100;
+  
+  // On définit la zone du plan complexe à afficher
+  // Centré sur le "cœur" de la fractale
+  const w = 4; 
+  const h = (w * height) / width;
+  const xmin = -2.5;
+  const ymin = -h / 2;
+
+  for (let x = 0; x < width; x++) {
+    for (let y = 0; y < height; y++) {
+      
+      // Conversion des coordonnées écran (x, y) en nombres complexes (a + bi)
+      let a = map(x, 0, width, xmin, xmin + w);
+      let b = map(y, 0, height, ymin, ymin + h);
+
+      let ca = a;
+      let cb = b;
+      let n = 0;
+
+      while (n < maxIterations) {
+        let aa = a * a;
+        let bb = b * b;
+        let twoab = 2.0 * a * b;
+        a = aa - bb + ca;
+        b = twoab + cb;
+        // Si la valeur s'échappe (supérieure à 4), on arrête
+        if (aa + bb > 16) break;
+        n++;
+      }
+
+      // Coloriage
+      let pix = (x + y * width) * 4;
+      let bright = map(n, 0, maxIterations, 0, 1);
+      bright = map(sqrt(bright), 0, 1, 0, 255); // Courbe de luminosité plus douce
+
+      if (n === maxIterations) {
+        pixels[pix + 0] = 0;
+        pixels[pix + 1] = 0;
+        pixels[pix + 2] = 0;
+      } else {
+        pixels[pix + 0] = bright;      // Rouge
+        pixels[pix + 1] = bright * 0.5; // Vert
+        pixels[pix + 2] = bright * 1.5; // Bleu
+      }
+      pixels[pix + 3] = 255; // Opacité
+    }
+  }
+  updatePixels();
+}
+
+// Pour que la fractale se redessine si on redimensionne la fenêtre
+function windowResized() {
+  resizeCanvas(windowWidth, windowHeight);
+  draw();
+}
+</script>
+
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9c4f2e5f2dab1297',t:'MTc2OTU4OTU4NS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
